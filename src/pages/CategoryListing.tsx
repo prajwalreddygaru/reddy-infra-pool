@@ -1,13 +1,16 @@
 import { motion } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
-import { TrendingDown, Filter, SortDesc } from 'lucide-react';
+import { TrendingDown, Filter, SortDesc, ShoppingCart } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { products, categories, formatCurrency, calculateSavings } from '@/lib/mockData';
+import { useAppStore } from '@/lib/store';
+import { toast } from '@/hooks/use-toast';
 
 export default function CategoryListing() {
   const { categoryId } = useParams<{ categoryId: string }>();
   const category = categories.find((c) => c.id === categoryId);
   const categoryProducts = products.filter((p) => p.category === categoryId);
+  const { addToCart, cart } = useAppStore();
 
   if (!category) {
     return (
@@ -18,6 +21,23 @@ export default function CategoryListing() {
       </AppLayout>
     );
   }
+
+  const handleAddToPool = (product: typeof products[0], e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Add MOQ quantity to cart
+    addToCart(product, product.moq);
+    
+    toast({
+      title: 'Added to Pool',
+      description: `${product.moq} ${product.unit}s of ${product.name} added to your pool`,
+    });
+  };
+
+  const isInCart = (productId: string) => {
+    return cart.some(item => item.product.id === productId);
+  };
 
   return (
     <AppLayout title={category.name} showBack showSearch>
@@ -121,13 +141,21 @@ export default function CategoryListing() {
                 </div>
 
                 <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  className="w-full mt-4 py-2.5 rounded-lg bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
+                  onClick={(e) => handleAddToPool(product, e)}
+                  className={`w-full mt-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                    isInCart(product.id)
+                      ? 'bg-accent/20 text-accent'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20'
+                  }`}
                 >
-                  + Add to Pool
+                  {isInCart(product.id) ? (
+                    <>
+                      <ShoppingCart className="w-4 h-4" />
+                      In Pool - Add More
+                    </>
+                  ) : (
+                    <>+ Add to Pool</>
+                  )}
                 </button>
               </Link>
             </motion.div>

@@ -24,7 +24,14 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const trendingProducts = products.slice(0, 4);
+  // Get top products from different categories for trending section
+  const trendingProducts = [
+    products.find(p => p.category === 'cement'),
+    products.find(p => p.category === 'steel'),
+    products.find(p => p.category === 'electrical'),
+    products.find(p => p.category === 'plumbing'),
+    products.find(p => p.category === 'hardware'),
+  ].filter(Boolean).slice(0, 5) as typeof products;
 
   return (
     <AppLayout showSearch>
