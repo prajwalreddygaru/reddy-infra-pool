@@ -1,48 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, ChevronRight, MapPin, Building2, Check } from 'lucide-react';
+import { Phone, ChevronRight, MapPin, Truck, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { cities, userTypes } from '@/lib/mockData';
 
-type OnboardingStep = 'phone' | 'otp' | 'userType' | 'city';
+type OnboardingStep = 'phone' | 'userType' | 'city';
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { setUser } = useAppStore();
   const [step, setStep] = useState<OnboardingStep>('phone');
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '']);
   const [selectedUserType, setSelectedUserType] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
 
   const handlePhoneSubmit = () => {
     if (phone.length === 10) {
-      setStep('otp');
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length <= 1) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-
-      if (value && index < 3) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
-        nextInput?.focus();
-      }
-    }
-  };
-
-  const handleOtpSubmit = () => {
-    if (otp.every((digit) => digit !== '')) {
-      setIsVerifying(true);
-      setTimeout(() => {
-        setIsVerifying(false);
-        setStep('userType');
-      }, 1500);
+      setStep('userType');
     }
   };
 
@@ -65,11 +40,6 @@ export default function Onboarding() {
     navigate('/');
   };
 
-  useEffect(() => {
-    if (otp.every((digit) => digit !== '')) {
-      handleOtpSubmit();
-    }
-  }, [otp]);
 
   const slideVariants = {
     enter: { x: 50, opacity: 0 },
@@ -87,10 +57,10 @@ export default function Onboarding() {
           className="flex items-center gap-3"
         >
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-primary-foreground" />
+            <Truck className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Reddy Infra</h1>
+            <h1 className="text-2xl font-bold text-foreground">reddyinfra.in</h1>
             <p className="text-sm text-muted-foreground">Smart Procurement Platform</p>
           </div>
         </motion.div>
@@ -99,7 +69,7 @@ export default function Onboarding() {
       {/* Progress */}
       <div className="px-6 py-4">
         <div className="flex gap-2">
-          {['phone', 'otp', 'userType', 'city'].map((s, i) => (
+          {['phone', 'userType', 'city'].map((s, i) => (
             <motion.div
               key={s}
               className="h-1 flex-1 rounded-full bg-secondary overflow-hidden"
@@ -112,7 +82,7 @@ export default function Onboarding() {
                 initial={{ width: 0 }}
                 animate={{
                   width:
-                    ['phone', 'otp', 'userType', 'city'].indexOf(step) >= i
+                    ['phone', 'userType', 'city'].indexOf(step) >= i
                       ? '100%'
                       : '0%',
                 }}
@@ -164,62 +134,6 @@ export default function Onboarding() {
                 Continue
                 <ChevronRight className="w-5 h-5" />
               </button>
-            </motion.div>
-          )}
-
-          {step === 'otp' && (
-            <motion.div
-              key="otp"
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Verify your number
-              </h2>
-              <p className="text-muted-foreground mb-8">
-                Enter the 4-digit code sent to +91 {phone}
-              </p>
-
-              <div className="flex gap-3 mb-6 justify-center">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-bold rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    maxLength={1}
-                  />
-                ))}
-              </div>
-
-              {isVerifying && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-2 text-muted-foreground"
-                >
-                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span>Verifying...</span>
-                </motion.div>
-              )}
-
-              <p className="text-center text-sm text-muted-foreground mt-6">
-                Didn't receive code?{' '}
-                <button className="text-primary font-medium">Resend</button>
-              </p>
-
-              <div className="mt-4 p-3 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground text-center">
-                  <span className="mock-badge">DEMO</span>{' '}
-                  Use any 4 digits to continue
-                </p>
-              </div>
             </motion.div>
           )}
 
